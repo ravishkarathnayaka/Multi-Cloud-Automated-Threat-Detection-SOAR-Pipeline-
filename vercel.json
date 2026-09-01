@@ -1,11 +1,4 @@
 {
-  "version": 2,
-  "public": true,
   "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/web/$1"
-    }
-  ]
+  "outputDirectory": "web"
 }
