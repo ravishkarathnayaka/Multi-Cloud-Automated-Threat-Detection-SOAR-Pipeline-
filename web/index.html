@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud SOAR - Threat Detection & Automated Incident Response Portal</title>
+  
+  <!-- Tailwind CSS & Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              500: '#14b8a6',
+              600: '#0d9488',
+              900: '#134e4a',
+            },
+            soc: {
+              bg: '#090d16',
+              card: '#0f172a',
+              border: '#1e293b',
+              accent: '#38bdf8',
+            }
+          },
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #090d16;
+      color: #f1f5f9;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+    .glow-rose {
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    @keyframes pulse-node {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+    .animate-pulse-node {
+      animation: pulse-node 1.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- Top Navigation / Header                                                   -->
+  <!-- ========================================================================= -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-emerald-400 p-0.5 shadow-lg shadow-cyan-500/20">
+          <div class="h-full w-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-5 h-5 text-cyan-400"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-lg tracking-tight text-white">CloudThreat<span class="text-cyan-400">SOAR</span></span>
+            <span class="px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">v1.0 Online</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Automated Threat Detection & Serverless Incident Response</p>
+        </div>
+      </div>
+
+      <!-- Live Pipeline Telemetry Status -->
+      <div class="flex items-center gap-4">
+        <div class="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span class="text-slate-300">Engine: <strong class="text-white">LocalStack / AWS Dual-Mode</strong></span>
+          <span class="text-slate-600">|</span>
+          <span class="text-slate-300">Rules: <strong class="text-cyan-400">4 Sigma Rules</strong></span>
+        </div>
+
+        <!-- GitHub Repository Link -->
+        <a href="https://github.com/ravishkarathnayaka/Multi-Cloud-Automated-Threat-Detection-SOAR-Pipeline-" target="_blank" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-white transition-all shadow-sm">
+          <i data-lucide="github" class="w-4 h-4"></i>
+          <span>View Source</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- Main Dashboard Content                                                    -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Top Metrics Overview Bar -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Mean Time to Contain</span>
+          <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl sm:text-3xl font-bold font-mono-code text-amber-400" id="metric-mttc">2.1s</span>
+          <span class="text-xs text-emerald-400 font-medium flex items-center">
+            <i data-lucide="trending-down" class="w-3 h-3 mr-0.5"></i> -99.9% vs manual
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-1">Average automated containment latency</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Containment Rate</span>
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl sm:text-3xl font-bold font-mono-code text-emerald-400">100%</span>
+          <span class="text-xs text-slate-400 font-medium">Zero Human Intervention</span>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-1">Playbooks executed with success</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Incidents Neutralized</span>
+          <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl sm:text-3xl font-bold font-mono-code text-cyan-400" id="metric-total-incidents">14</span>
+          <span class="text-xs text-cyan-500 font-medium">Active Session</span>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-1">Threat events quarantined across cloud</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">MITRE ATT&CK Coverage</span>
+          <i data-lucide="grid" class="w-4 h-4 text-purple-400"></i>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl sm:text-3xl font-bold font-mono-code text-purple-400">6 Techniques</span>
+          <span class="text-xs text-purple-300 font-medium">Cloud Matrix</span>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-1">T1098, T1078, T1562, T1530, T1071, T1190</p>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- Interactive Attack Simulator Control Center                             -->
+    <!-- ======================================================================= -->
+    <section class="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 shadow-xl">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+            <h2 class="text-lg font-bold text-white tracking-tight">Interactive Threat Emulation & SOAR Trigger Center</h2>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">Trigger simulated cloud attack vectors to watch the serverless SOAR pipeline detect, contain, and remediate the incident in real-time.</p>
+        </div>
+        <button onclick="simulateAllAttacks()" class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
+          <i data-lucide="flame" class="w-4 h-4"></i>
+          <span>Emulate Full Adversary Campaign (All 4 Vectors)</span>
+        </button>
+      </div>
+
+      <!-- Action Simulation Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Simulation Card 1: IAM Privilege Escalation -->
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/50 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">CRITICAL</span>
+              <span class="text-[11px] font-mono-code text-slate-400">T1098</span>
+            </div>
+            <h3 class="text-sm font-semibold text-white group-hover:text-cyan-400 transition-colors">IAM Admin Escalation</h3>
+            <p class="text-xs text-slate-400 mt-1">Adversary attaches `AdministratorAccess` to compromised user credentials.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-[11px] text-slate-500 font-mono-code">revoke_iam.py</span>
+            <button onclick="triggerSimulation('iam')" class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/30 text-xs font-semibold transition-all">
+              Trigger Attack
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulation Card 2: S3 Public Exposure -->
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/50 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">HIGH</span>
+              <span class="text-[11px] font-mono-code text-slate-400">T1530</span>
+            </div>
+            <h3 class="text-sm font-semibold text-white group-hover:text-cyan-400 transition-colors">S3 Public Data Exposure</h3>
+            <p class="text-xs text-slate-400 mt-1">Adversary disables Public Access Block & attaches wildcard public policy.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-[11px] text-slate-500 font-mono-code">remediate_s3.py</span>
+            <button onclick="triggerSimulation('s3')" class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/30 text-xs font-semibold transition-all">
+              Trigger Attack
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulation Card 3: EC2 C2 Intrusion -->
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/50 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">CRITICAL</span>
+              <span class="text-[11px] font-mono-code text-slate-400">T1071</span>
+            </div>
+            <h3 class="text-sm font-semibold text-white group-hover:text-cyan-400 transition-colors">EC2 Host C2 Intrusion</h3>
+            <p class="text-xs text-slate-400 mt-1">Compromised host opens ingress (0.0.0.0/0) and initiates command & control traffic.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-[11px] text-slate-500 font-mono-code">isolate_ec2.py</span>
+            <button onclick="triggerSimulation('ec2')" class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/30 text-xs font-semibold transition-all">
+              Trigger Attack
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulation Card 4: CloudTrail Defense Evasion -->
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/50 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">CRITICAL</span>
+              <span class="text-[11px] font-mono-code text-slate-400">T1562.001</span>
+            </div>
+            <h3 class="text-sm font-semibold text-white group-hover:text-cyan-400 transition-colors">CloudTrail Tampering</h3>
+            <p class="text-xs text-slate-400 mt-1">Adversary calls StopLogging to blind security monitoring & impair defenses.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-[11px] text-slate-500 font-mono-code">alert_dispatcher.py</span>
+            <button onclick="triggerSimulation('trail')" class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/30 text-xs font-semibold transition-all">
+              Trigger Attack
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- Visual SOAR Playbook Execution Pipeline Visualizer                      -->
+    <!-- ======================================================================= -->
+    <section class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            <i data-lucide="git-branch" class="w-4 h-4 text-cyan-400"></i>
+            Real-Time SOAR Playbook Execution Pipeline
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">Visual representation of sub-second event ingestion, rule matching, Lambda containment, and dispatch.</p>
+        </div>
+        <div id="pipeline-status-badge" class="px-3 py-1 rounded-full text-xs font-mono-code bg-slate-800 text-slate-400 border border-slate-700">
+          Status: Idle (Listening)
+        </div>
+      </div>
+
+      <!-- Interactive 5-Step Pipeline Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3 relative">
+        
+        <!-- Step 1 -->
+        <div id="step-1" class="p-4 rounded-xl bg-slate-950 border border-slate-800 transition-all duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono-code text-slate-500 font-bold">STEP 01</span>
+            <i data-lucide="radio" class="w-4 h-4 text-slate-600 step-icon"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-200">Threat Ingestion</h4>
+          <p class="text-[11px] text-slate-400 mt-1">CloudTrail Management Event or GuardDuty Alert</p>
+          <div class="mt-3 text-[10px] font-mono-code text-slate-500 step-meta">Latency: 0.1s</div>
+        </div>
+
+        <!-- Step 2 -->
+        <div id="step-2" class="p-4 rounded-xl bg-slate-950 border border-slate-800 transition-all duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono-code text-slate-500 font-bold">STEP 02</span>
+            <i data-lucide="filter" class="w-4 h-4 text-slate-600 step-icon"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-200">EventBridge Filter</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Pattern match against Sigma detection rule</p>
+          <div class="mt-3 text-[10px] font-mono-code text-slate-500 step-meta">Route: Lambda</div>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="step-3" class="p-4 rounded-xl bg-slate-950 border border-slate-800 transition-all duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono-code text-slate-500 font-bold">STEP 03</span>
+            <i data-lucide="cpu" class="w-4 h-4 text-slate-600 step-icon"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-200">SOAR Lambda Execution</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Invokes typed Python 3.11+ containment handler</p>
+          <div class="mt-3 text-[10px] font-mono-code text-slate-500 step-meta">Runtime: Serverless</div>
+        </div>
+
+        <!-- Step 4 -->
+        <div id="step-4" class="p-4 rounded-xl bg-slate-950 border border-slate-800 transition-all duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono-code text-slate-500 font-bold">STEP 04</span>
+            <i data-lucide="lock" class="w-4 h-4 text-slate-600 step-icon"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-200">Cloud Containment</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Quarantine SG / DenyAll / PAB / EBS Snapshots</p>
+          <div class="mt-3 text-[10px] font-mono-code text-slate-500 step-meta">API: Boto3 Resilient</div>
+        </div>
+
+        <!-- Step 5 -->
+        <div id="step-5" class="p-4 rounded-xl bg-slate-950 border border-slate-800 transition-all duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono-code text-slate-500 font-bold">STEP 05</span>
+            <i data-lucide="bell-ring" class="w-4 h-4 text-slate-600 step-icon"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-200">SecOps Dispatch</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Slack Block Kit & Webhook Incident Card</p>
+          <div class="mt-3 text-[10px] font-mono-code text-slate-500 step-meta">Status: Delivered</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- Active Incidents & Evidence Payload Inspector                           -->
+    <!-- ======================================================================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Incident Queue (Left 1 Col) -->
+      <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur flex flex-col h-[520px]">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="shield" class="w-4 h-4 text-cyan-400"></i>
+            Live Incident Queue
+          </h3>
+          <span class="text-xs font-mono-code text-slate-400" id="incident-counter-badge">3 Total</span>
+        </div>
+
+        <div class="flex-1 overflow-y-auto mt-4 space-y-3 pr-1" id="incidents-container">
+          <!-- Dynamic Incident Cards Inserted Here -->
+        </div>
+      </div>
+
+      <!-- Deep Forensic Payload Inspector (Right 2 Cols) -->
+      <div class="lg:col-span-2 p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur flex flex-col h-[520px]">
+        
+        <!-- Inspector Tabs -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2">
+            <button onclick="switchTab('overview')" id="tab-overview" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+              Overview & Containment
+            </button>
+            <button onclick="switchTab('cloudtrail')" id="tab-cloudtrail" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800">
+              Raw CloudTrail JSON
+            </button>
+            <button onclick="switchTab('log')" id="tab-log" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800">
+              Lambda Execution Log
+            </button>
+            <button onclick="switchTab('slack')" id="tab-slack" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800">
+              Slack Block Kit Card
+            </button>
+          </div>
+          <span class="text-xs font-mono-code text-slate-500" id="selected-incident-id">INC-IAM-8942</span>
+        </div>
+
+        <!-- Tab 1: Overview Panel -->
+        <div id="view-overview" class="flex-1 overflow-y-auto mt-4 space-y-4 text-xs">
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Incident Classification</span>
+              <span id="detail-severity" class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">CRITICAL</span>
+            </div>
+            <h4 id="detail-title" class="text-sm font-bold text-white mt-1">IAM User AdministratorAccess Privilege Escalation</h4>
+            <p id="detail-summary" class="text-slate-400 mt-1">Compromised IAM user was assigned root administrator rights.</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-[11px] text-slate-500">Compromised Resource</span>
+              <p id="detail-resource" class="font-mono-code text-slate-200 mt-0.5 break-all">arn:aws:iam::123456789012:user/attacker-sim-user</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-[11px] text-slate-500">MITRE ATT&CK Mapping</span>
+              <p id="detail-mitre" class="font-mono-code text-cyan-400 mt-0.5">T1098 - Account Manipulation</p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Automated Remediation Actions Executed</span>
+            <pre id="detail-action" class="font-mono-code text-emerald-400 mt-2 whitespace-pre-wrap leading-relaxed text-xs">1. Deactivated active access keys: ['AKIARZPUZDIKP5PZ5YDL']
+2. Attached inline emergency DenyAll policy: SOAR-DenyAll-Emergency
+3. Tagged user with SOAR:Remediated=True</pre>
+          </div>
+        </div>
+
+        <!-- Tab 2: Raw CloudTrail Event -->
+        <div id="view-cloudtrail" class="hidden flex-1 overflow-y-auto mt-4">
+          <pre id="code-cloudtrail" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono-code text-cyan-300 text-xs overflow-x-auto"></pre>
+        </div>
+
+        <!-- Tab 3: Lambda Execution Log -->
+        <div id="view-log" class="hidden flex-1 overflow-y-auto mt-4">
+          <pre id="code-log" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono-code text-emerald-400 text-xs overflow-x-auto"></pre>
+        </div>
+
+        <!-- Tab 4: Rendered Slack Card -->
+        <div id="view-slack" class="hidden flex-1 overflow-y-auto mt-4 flex justify-center items-start">
+          <div class="w-full max-w-lg p-4 rounded-xl bg-[#1a1d21] border border-[#2c3136] shadow-xl text-slate-200 text-xs font-sans space-y-3">
+            <div class="flex items-center gap-2 border-b border-[#2c3136] pb-2">
+              <span class="text-sm">🚨</span>
+              <span class="font-bold text-white text-sm" id="slack-header">[CRITICAL] IAM User Credentials Revoked</span>
+            </div>
+            <p id="slack-summary" class="text-slate-300 font-medium">Detected unauthorized privilege activity for user 'attacker-sim-user'. Sessions revoked.</p>
+            <div class="grid grid-cols-2 gap-2 bg-[#222529] p-3 rounded-lg border border-[#2c3136]">
+              <div><strong class="text-slate-400">Status:</strong> <span id="slack-status" class="text-emerald-400">✅ REMEDIATED</span></div>
+              <div><strong class="text-slate-400">Severity:</strong> <span id="slack-severity" class="text-rose-400 font-mono-code">CRITICAL</span></div>
+              <div class="col-span-2"><strong class="text-slate-400">Resource:</strong> <span id="slack-resource" class="font-mono-code text-slate-300 break-all">arn:aws:iam::user/attacker-sim-user</span></div>
+            </div>
+            <div class="bg-[#222529] p-3 rounded-lg border border-[#2c3136]">
+              <strong class="text-slate-400 block mb-1">Remediation Executed:</strong>
+              <pre id="slack-action" class="font-mono-code text-emerald-300 whitespace-pre-wrap text-[11px]"></pre>
+            </div>
+            <div class="text-[10px] text-slate-500 pt-1 flex justify-between">
+              <span>Triggered via Amazon EventBridge</span>
+              <span>SOAR Engine Pipeline v1.0</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- MITRE ATT&CK Cloud Matrix Alignment Explorer                            -->
+    <!-- ======================================================================= -->
+    <section class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-purple-400"></i>
+            MITRE ATT&CK® Enterprise Cloud Domain Coverage
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">Direct mapping of adversary tactics to automated serverless response runbooks.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="text-slate-400 font-semibold uppercase">Privilege Escalation & Persistence</span>
+            <span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 font-mono-code text-[10px]">T1098 / T1078.004</span>
+          </div>
+          <h4 class="text-sm font-bold text-white">AdministratorAccess Policy Hijack</h4>
+          <p class="text-xs text-slate-400 mt-1">Automatic deactivation of access keys and instant invalidation of pre-existing STS tokens using `DateLessThan` TokenIssueTime condition.</p>
+          <div class="mt-3 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-900 pt-2">
+            <span>Handler: <code class="text-cyan-400">revoke_iam_session.py</code></span>
+            <span class="text-emerald-400 font-semibold">MTTC: &lt;3s</span>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="text-slate-400 font-semibold uppercase">Exfiltration & Storage Abuse</span>
+            <span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 font-mono-code text-[10px]">T1530</span>
+          </div>
+          <h4 class="text-sm font-bold text-white">S3 Public Access Block Removal</h4>
+          <p class="text-xs text-slate-400 mt-1">Immediate enforcement of all 4 S3 Public Access Block controls, deletion of wildcard allow bucket policies, and security tagging.</p>
+          <div class="mt-3 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-900 pt-2">
+            <span>Handler: <code class="text-cyan-400">remediate_s3.py</code></span>
+            <span class="text-emerald-400 font-semibold">MTTC: &lt;4s</span>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="text-slate-400 font-semibold uppercase">Command & Control / Initial Access</span>
+            <span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 font-mono-code text-[10px]">T1071 / T1190</span>
+          </div>
+          <h4 class="text-sm font-bold text-white">EC2 Ingress Breach & C2 Beaconing</h4>
+          <p class="text-xs text-slate-400 mt-1">Dynamic replacement of instance security groups with a zero-ingress/egress Quarantine SG and automated forensic EBS snapshotting.</p>
+          <div class="mt-3 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-900 pt-2">
+            <span>Handler: <code class="text-cyan-400">isolate_ec2.py</code></span>
+            <span class="text-emerald-400 font-semibold">MTTC: &lt;5s</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- Footer                                                                    -->
+  <!-- ========================================================================= -->
+  <footer class="border-t border-slate-800 bg-slate-950/60 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>Multi-Cloud Automated Threat Detection & SOAR Pipeline | Licensed under Apache 2.0</p>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/ravishkarathnayaka/Multi-Cloud-Automated-Threat-Detection-SOAR-Pipeline-" target="_blank" class="text-slate-400 hover:text-cyan-400 transition-colors">GitHub Repository</a>
+        <span>•</span>
+        <a href="https://attack.mitre.org/matrices/enterprise/cloud/" target="_blank" class="text-slate-400 hover:text-cyan-400 transition-colors">MITRE ATT&CK Cloud Matrix</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- Interactive State Management & Simulation Engine Scripts                  -->
+  <!-- ========================================================================= -->
+  <script>
+    // Initial Sample Incidents Data
+    const incidents = [
+      {
+        id: "INC-IAM-8942",
+        title: "IAM User AdministratorAccess Privilege Escalation",
+        summary: "Adversary attached AdministratorAccess managed policy to rogue user.",
+        severity: "CRITICAL",
+        status: "REMEDIATED",
+        resource: "arn:aws:iam::123456789012:user/attacker-sim-user",
+        mitre: "T1098 / T1078.004 - Account Manipulation",
+        action: "1. Deactivated active access keys: ['AKIARZPUZDIKP5PZ5YDL']\n2. Attached inline emergency DenyAll policy: SOAR-DenyAll-Emergency\n3. Tagged user with incident metadata",
+        cloudtrail: {
+          eventVersion: "1.08",
+          userIdentity: { type: "IAMUser", userName: "attacker-sim-user" },
+          eventTime: new Date().toISOString(),
+          eventSource: "iam.amazonaws.com",
+          eventName: "AttachUserPolicy",
+          awsRegion: "us-east-1",
+          requestParameters: {
+            userName: "attacker-sim-user",
+            policyArn: "arn:aws:iam::aws:policy/AdministratorAccess"
+          }
+        },
+        log: {
+          timestamp: new Date().toISOString(),
+          level: "INFO",
+          logger: "soar_engine.handlers.revoke_iam_session",
+          message: "Deactivated access key AKIARZPUZDIKP5PZ5YDL for user attacker-sim-user",
+          status: "REMEDIATED"
+        }
+      },
+      {
+        id: "INC-S3-5120",
+        title: "S3 Bucket Public Exposure Neutralized",
+        summary: "Bucket public access block was deleted exposing sensitive storage objects.",
+        severity: "HIGH",
+        status: "REMEDIATED",
+        resource: "arn:aws:s3:::corp-data-exposed-bucket",
+        mitre: "T1530 - Data from Cloud Storage Object",
+        action: "1. Enabled all 4 S3 Public Access Block controls\n2. Policy Action: Sanitized wildcard public allow policy\n3. Applied compliance tags: SOAR:Compliance=StrictPrivate",
+        cloudtrail: {
+          eventVersion: "1.08",
+          userIdentity: { type: "IAMUser", userName: "adversary-actor" },
+          eventTime: new Date().toISOString(),
+          eventSource: "s3.amazonaws.com",
+          eventName: "DeletePublicAccessBlock",
+          requestParameters: { bucketName: "corp-data-exposed-bucket" }
+        },
+        log: {
+          timestamp: new Date().toISOString(),
+          level: "INFO",
+          logger: "soar_engine.handlers.remediate_s3",
+          message: "Enforced strict Public Access Block on bucket corp-data-exposed-bucket",
+          status: "REMEDIATED"
+        }
+      },
+      {
+        id: "INC-EC2-1940",
+        title: "EC2 Host Isolated & Forensic Snapshots Captured",
+        summary: "Compromised EC2 host detected opening open ingress 0.0.0.0/0 on port 22.",
+        severity: "CRITICAL",
+        status: "CONTAINED",
+        resource: "i-fa30369f1d33869ca",
+        mitre: "T1071 / T1190 - Application Protocol / Exploit Public App",
+        action: "1. Swapped SGs (sg-web-public) -> [sg-soar-quarantine]\n2. Tagged instance with SOAR:QuarantineState=Quarantined\n3. Captured 1 EBS forensic snapshot: snap-42974c41a21e7f608",
+        cloudtrail: {
+          eventVersion: "1.08",
+          userIdentity: { type: "AssumedRole", roleName: "compromised-role" },
+          eventTime: new Date().toISOString(),
+          eventSource: "ec2.amazonaws.com",
+          eventName: "AuthorizeSecurityGroupIngress",
+          requestParameters: { cidrIp: "0.0.0.0/0", fromPort: 22, toPort: 22 }
+        },
+        log: {
+          timestamp: new Date().toISOString(),
+          level: "INFO",
+          logger: "soar_engine.handlers.isolate_ec2",
+          message: "Replaced security groups on i-fa30369f1d33869ca with Quarantine SG",
+          status: "CONTAINED"
+        }
+      }
+    ];
+
+    let selectedIncident = incidents[0];
+
+    // Render Incident Cards
+    function renderIncidents() {
+      const container = document.getElementById("incidents-container");
+      container.innerHTML = "";
+
+      incidents.forEach((inc, idx) => {
+        const isSelected = selectedIncident.id === inc.id;
+        const card = document.createElement("div");
+        card.className = `p-3.5 rounded-xl border cursor-pointer transition-all ${
+          isSelected 
+            ? "bg-slate-900 border-cyan-500 shadow-md shadow-cyan-500/10" 
+            : "bg-slate-950/70 border-slate-800 hover:border-slate-700"
+        }`;
+        card.onclick = () => selectIncident(inc);
+
+        const sevBadge = inc.severity === "CRITICAL"
+          ? `<span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">CRITICAL</span>`
+          : `<span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">HIGH</span>`;
+
+        const statBadge = inc.status === "CONTAINED"
+          ? `<span class="text-[10px] text-cyan-400 font-semibold">🛡️ CONTAINED</span>`
+          : `<span class="text-[10px] text-emerald-400 font-semibold">✅ REMEDIATED</span>`;
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            ${sevBadge}
+            <span class="text-[10px] font-mono-code text-slate-500">${inc.id}</span>
+          </div>
+          <h4 class="text-xs font-bold text-slate-200 line-clamp-1">${inc.title}</h4>
+          <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-900">
+            <span class="text-[10px] text-slate-500 font-mono-code line-clamp-1 max-w-[120px]">${inc.resource}</span>
+            ${statBadge}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById("incident-counter-badge").innerText = `${incidents.length} Total`;
+      document.getElementById("metric-total-incidents").innerText = `${incidents.length + 11}`;
+    }
+
+    // Select Incident & Populate Inspector
+    function selectIncident(inc) {
+      selectedIncident = inc;
+      renderIncidents();
+
+      document.getElementById("selected-incident-id").innerText = inc.id;
+      document.getElementById("detail-title").innerText = inc.title;
+      document.getElementById("detail-summary").innerText = inc.summary;
+      document.getElementById("detail-resource").innerText = inc.resource;
+      document.getElementById("detail-mitre").innerText = inc.mitre;
+      document.getElementById("detail-action").innerText = inc.action;
+      
+      const sevEl = document.getElementById("detail-severity");
+      sevEl.innerText = inc.severity;
+      sevEl.className = inc.severity === "CRITICAL"
+        ? "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20"
+        : "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20";
+
+      document.getElementById("code-cloudtrail").innerText = JSON.stringify(inc.cloudtrail, null, 2);
+      document.getElementById("code-log").innerText = JSON.stringify(inc.log, null, 2);
+
+      // Slack Card
+      document.getElementById("slack-header").innerText = `[${inc.severity}] ${inc.title}`;
+      document.getElementById("slack-summary").innerText = inc.summary;
+      document.getElementById("slack-severity").innerText = inc.severity;
+      document.getElementById("slack-resource").innerText = inc.resource;
+      document.getElementById("slack-status").innerText = inc.status === "CONTAINED" ? "🛡️ CONTAINED" : "✅ REMEDIATED";
+      document.getElementById("slack-action").innerText = inc.action;
+    }
+
+    // Switch Inspector Tab
+    function switchTab(tab) {
+      ["overview", "cloudtrail", "log", "slack"].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add("hidden");
+        const btn = document.getElementById(`tab-${t}`);
+        btn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800";
+      });
+
+      document.getElementById(`view-${tab}`).classList.remove("hidden");
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      activeBtn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30";
+    }
+
+    // Animate Visual Pipeline Step by Step
+    async function animatePipeline(type) {
+      const statusBadge = document.getElementById("pipeline-status-badge");
+      statusBadge.className = "px-3 py-1 rounded-full text-xs font-mono-code bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 animate-pulse";
+      statusBadge.innerText = "Status: Threat Trigger Ingested...";
+
+      for (let i = 1; i <= 5; i++) {
+        const stepEl = document.getElementById(`step-${i}`);
+        stepEl.classList.add("border-cyan-500", "bg-cyan-950/30", "glow-cyan");
+        const icon = stepEl.querySelector(".step-icon");
+        if (icon) icon.classList.add("text-cyan-400");
+        await new Promise(r => setTimeout(r, 400));
+      }
+
+      await new Promise(r => setTimeout(r, 300));
+
+      for (let i = 1; i <= 5; i++) {
+        const stepEl = document.getElementById(`step-${i}`);
+        stepEl.classList.remove("border-cyan-500", "bg-cyan-950/30", "glow-cyan");
+        const icon = stepEl.querySelector(".step-icon");
+        if (icon) icon.classList.remove("text-cyan-400");
+      }
+
+      statusBadge.className = "px-3 py-1 rounded-full text-xs font-mono-code bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+      statusBadge.innerText = "Status: Contained in 2.1s";
+
+      setTimeout(() => {
+        statusBadge.className = "px-3 py-1 rounded-full text-xs font-mono-code bg-slate-800 text-slate-400 border border-slate-700";
+        statusBadge.innerText = "Status: Idle (Listening)";
+      }, 3000);
+    }
+
+    // Trigger Single Attack
+    async function triggerSimulation(type) {
+      animatePipeline(type);
+
+      const randomId = Math.floor(1000 + Math.random() * 9000);
+      let newInc;
+
+      if (type === 'iam') {
+        newInc = {
+          id: `INC-IAM-${randomId}`,
+          title: "IAM Role Unauthorized AdministratorAccess Hijack",
+          summary: "Compromised application role granted AdministratorAccess.",
+          severity: "CRITICAL",
+          status: "REMEDIATED",
+          resource: `arn:aws:iam::123456789012:role/web-app-role-${randomId}`,
+          mitre: "T1098 - Account Manipulation",
+          action: `1. Inactive credentials attached\n2. Attached inline emergency DenyAll policy\n3. Invalidated all STS tokens issued before ${new Date().toISOString()}`,
+          cloudtrail: {
+            eventTime: new Date().toISOString(),
+            eventName: "AttachRolePolicy",
+            eventSource: "iam.amazonaws.com",
+            requestParameters: { roleName: `web-app-role-${randomId}`, policyArn: "arn:aws:iam::aws:policy/AdministratorAccess" }
+          },
+          log: {
+            timestamp: new Date().toISOString(),
+            level: "INFO",
+            logger: "soar_engine.handlers.revoke_iam_session",
+            message: "Attached STS session invalidation policy to role",
+            status: "REMEDIATED"
+          }
+        };
+      } else if (type === 's3') {
+        newInc = {
+          id: `INC-S3-${randomId}`,
+          title: "S3 Bucket Public Exposure Neutralized",
+          summary: "Bucket public access block deleted exposing confidential files.",
+          severity: "HIGH",
+          status: "REMEDIATED",
+          resource: `arn:aws:s3:::audit-vault-${randomId}`,
+          mitre: "T1530 - Data from Cloud Storage",
+          action: "1. Enforced all 4 S3 Public Access Block settings\n2. Sanitized public bucket policy\n3. Tagged resource with StrictPrivate compliance",
+          cloudtrail: {
+            eventTime: new Date().toISOString(),
+            eventName: "DeletePublicAccessBlock",
+            eventSource: "s3.amazonaws.com",
+            requestParameters: { bucketName: `audit-vault-${randomId}` }
+          },
+          log: {
+            timestamp: new Date().toISOString(),
+            level: "INFO",
+            logger: "soar_engine.handlers.remediate_s3",
+            message: "Enforced strict Public Access Block on bucket",
+            status: "REMEDIATED"
+          }
+        };
+      } else if (type === 'ec2') {
+        newInc = {
+          id: `INC-EC2-${randomId}`,
+          title: "EC2 Host Isolated & Forensic Snapshots Captured",
+          summary: "Suspicious outbound C2 traffic detected on EC2 workload.",
+          severity: "CRITICAL",
+          status: "CONTAINED",
+          resource: `i-${Math.random().toString(16).substr(2, 8)}`,
+          mitre: "T1071 / T1190 - Application Protocol",
+          action: "1. Swapped security groups to zero-traffic Quarantine SG\n2. Tagged instance with SOAR:QuarantineState=Quarantined\n3. Generated point-in-time forensic EBS snapshots",
+          cloudtrail: {
+            eventTime: new Date().toISOString(),
+            eventName: "AuthorizeSecurityGroupIngress",
+            eventSource: "ec2.amazonaws.com",
+            requestParameters: { cidrIp: "0.0.0.0/0", fromPort: 22, toPort: 22 }
+          },
+          log: {
+            timestamp: new Date().toISOString(),
+            level: "INFO",
+            logger: "soar_engine.handlers.isolate_ec2",
+            message: "Replaced instance security groups with Quarantine SG",
+            status: "CONTAINED"
+          }
+        };
+      } else {
+        newInc = {
+          id: `INC-TRL-${randomId}`,
+          title: "CloudTrail Logging Disabled (Defense Evasion)",
+          summary: "Adversary attempted to blind detection telemetry by halting CloudTrail logging.",
+          severity: "CRITICAL",
+          status: "REMEDIATED",
+          resource: "arn:aws:cloudtrail:us-east-1:123456789012:trail/soar-pipeline-trail",
+          mitre: "T1562.001 - Impair Defenses: Disable Cloud Logs",
+          action: "1. Generated high-priority incident payload\n2. Dispatched emergency Slack Block Kit alert to SecOps\n3. Flagged AWS account for forensic review",
+          cloudtrail: {
+            eventTime: new Date().toISOString(),
+            eventName: "StopLogging",
+            eventSource: "cloudtrail.amazonaws.com",
+            requestParameters: { name: "soar-pipeline-trail" }
+          },
+          log: {
+            timestamp: new Date().toISOString(),
+            level: "CRITICAL",
+            logger: "soar_engine.handlers.alert_dispatcher",
+            message: "CloudTrail StopLogging event intercepted",
+            status: "REMEDIATED"
+          }
+        };
+      }
+
+      incidents.unshift(newInc);
+      selectIncident(newInc);
+    }
+
+    // Trigger All Attacks
+    async function simulateAllAttacks() {
+      const types = ['iam', 's3', 'ec2', 'trail'];
+      for (const t of types) {
+        await triggerSimulation(t);
+        await new Promise(r => setTimeout(r, 600));
+      }
+    }
+
+    // Initialize
+    window.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      selectIncident(incidents[0]);
+    });
+  </script>
+</body>
+</html>
