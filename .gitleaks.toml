@@ -1,0 +1,15 @@
+title = "Gitleaks Configuration for Threat Detection SOAR Pipeline"
+
+[allowlist]
+description = "Allow mock credentials in test suites and simulations"
+paths = [
+    '''tests/.*''',
+    '''simulations/.*''',
+    '''docker/\.env\.example''',
+    '''README\.md'''
+]
+regexes = [
+    '''mock_.*''',
+    '''testing''',
+    '''AKIARZPUZDIK.*'''
+]

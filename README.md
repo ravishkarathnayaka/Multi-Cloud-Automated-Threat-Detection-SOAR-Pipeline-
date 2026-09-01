@@ -1,7 +1,7 @@
 # Multi-Cloud Automated Threat Detection & SOAR Pipeline
 
-[![CI Pipeline](https://github.com/your-org/cloud-threat-detection-soar-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/cloud-threat-detection-soar-pipeline/actions/workflows/ci.yml)
-[![Security Scan](https://github.com/your-org/cloud-threat-detection-soar-pipeline/actions/workflows/security-scan.yml/badge.svg)](https://github.com/your-org/cloud-threat-detection-soar-pipeline/actions/workflows/security-scan.yml)
+[![CI Pipeline](https://github.com/ravishkarathnayaka/Multi-Cloud-Automated-Threat-Detection-SOAR-Pipeline-/actions/workflows/ci.yml/badge.svg)](https://github.com/ravishkarathnayaka/Multi-Cloud-Automated-Threat-Detection-SOAR-Pipeline-/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/ravishkarathnayaka/Multi-Cloud-Automated-Threat-Detection-SOAR-Pipeline-/actions/workflows/security-scan.yml/badge.svg)](https://github.com/ravishkarathnayaka/Multi-Cloud-Automated-Threat-Detection-SOAR-Pipeline-/actions/workflows/security-scan.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Terraform: >=1.5.0](https://img.shields.io/badge/terraform->=1.5.0-623CE4.svg)](https://www.terraform.io/)
