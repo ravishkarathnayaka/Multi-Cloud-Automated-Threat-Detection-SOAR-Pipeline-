@@ -1,0 +1,32 @@
+title: AWS IAM Administrator Policy Attached
+id: 9a207212-32b0-4dbb-9686-21827fa6d7e0
+status: production
+description: Detects the attachment of the AdministratorAccess managed policy to an IAM user, role, or group, representing potential privilege escalation or persistence.
+references:
+    - https://attack.mitre.org/techniques/T1098/
+    - https://attack.mitre.org/techniques/T1078/004/
+    - https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_job-functions.html#jfadmin
+author: SOAR Pipeline Engineering Team
+date: 2026/09/01
+modified: 2026/09/01
+tags:
+    - attack.persistence
+    - attack.privilege_escalation
+    - attack.t1098
+    - attack.t1078.004
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: iam.amazonaws.com
+        eventName:
+            - AttachUserPolicy
+            - AttachRolePolicy
+            - AttachGroupPolicy
+        requestParameters.policyArn|contains:
+            - 'AdministratorAccess'
+    condition: selection
+falsepositives:
+    - Legitimate administrator role provisioning via verified CI/CD Terraform pipelines or AWS Organizations bootstrap scripts.
+level: critical

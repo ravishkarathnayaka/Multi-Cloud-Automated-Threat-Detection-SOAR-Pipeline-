@@ -1,0 +1,100 @@
+version: "3.8"
+
+services:
+  # ============================================================================
+  # 1. LocalStack: Emulates Core AWS Services (S3, EC2, IAM, Lambda, Events, Logs)
+  # ============================================================================
+  localstack:
+    container_name: soar_localstack
+    image: localstack/localstack:3.0
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    environment:
+      - SERVICES=s3,ec2,iam,lambda,events,logs,sts,cloudtrail
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - DEBUG=${DEBUG:-0}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - soar_network
+
+  # ============================================================================
+  # 2. OpenSearch: SIEM Log Indexer and Security Analytics Engine
+  # ============================================================================
+  opensearch:
+    container_name: soar_opensearch
+    image: opensearchproject/opensearch:2.12.0
+    environment:
+      - cluster.name=soar-siem-cluster
+      - node.name=soar-node-1
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - DISABLE_SECURITY_PLUGIN=true
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - soar_network
+
+  # ============================================================================
+  # 3. OpenSearch Dashboards: Visual SIEM Console for Threat Hunting
+  # ============================================================================
+  opensearch-dashboards:
+    container_name: soar_dashboards
+    image: opensearchproject/opensearch-dashboards:2.12.0
+    ports:
+      - "5601:5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch:9200"]'
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    depends_on:
+      - opensearch
+    networks:
+      - soar_network
+
+  # ============================================================================
+  # 4. Mock Webhook Receiver: Inspects SOAR Alert Dispatches Locally
+  # ============================================================================
+  mock-webhook-receiver:
+    container_name: soar_webhook_receiver
+    image: python:3.11-alpine
+    ports:
+      - "8080:8080"
+    command: >
+      python -c "
+      import json, sys
+      from http.server import HTTPServer, BaseHTTPRequestHandler
+      class Handler(BaseHTTPRequestHandler):
+          def do_POST(self):
+              length = int(self.headers.get('content-length', 0))
+              body = self.rfile.read(length)
+              print('\n' + '='*60 + '\n[SOAR ALERT RECEIVED]\n' + '='*60, flush=True)
+              try:
+                  parsed = json.loads(body.decode('utf-8'))
+                  print(json.dumps(parsed, indent=2), flush=True)
+              except Exception:
+                  print(body.decode('utf-8'), flush=True)
+              self.send_response(200)
+              self.send_header('Content-Type', 'application/json')
+              self.end_headers()
+              self.wfile.write(b'{\"status\":\"received\"}')
+          def log_message(self, format, *args):
+              return
+      print('Mock Webhook Receiver listening on port 8080...', flush=True)
+      HTTPServer(('0.0.0.0', 8080), Handler).serve_forever()
+      "
+    networks:
+      - soar_network
+
+volumes:
+  localstack_data:
+  opensearch_data:
+
+networks:
+  soar_network:
+    driver: bridge
