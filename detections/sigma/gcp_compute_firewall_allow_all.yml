@@ -1,0 +1,27 @@
+title: GCP Compute Engine Firewall Rule Inbound Allow 0.0.0.0/0
+id: 66778899-aabb-ccdd-eeff-001122334455
+status: production
+description: Detects VPC firewall rules configured to allow ingress from 0.0.0.0/0 on sensitive ports like SSH (22) or RDP (3389).
+references:
+    - https://attack.mitre.org/techniques/T1190/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.initial_access
+    - attack.t1190
+logsource:
+    product: gcp
+    service: cloudaudit
+detection:
+    selection:
+        protoPayload.methodName:
+            - 'v1.compute.firewalls.insert'
+            - 'v1.compute.firewalls.patch'
+        protoPayload.request.sourceRanges: '0.0.0.0/0'
+        protoPayload.request.allowed.ports:
+            - '22'
+            - '3389'
+    condition: selection
+falsepositives:
+    - Temporary testing firewall rules in ephemeral developer lab VPC networks.
+level: critical
