@@ -1,0 +1,22 @@
+title: AWS Route53 Hosted Zone Record Modification for Command and Control
+id: f0e1d2c3-b4a5-6978-879a-bcdef0123456
+status: production
+description: Detects anomalous modifications to public or private Route53 hosted zones pointing to known malicious C2 IP ranges.
+references:
+    - https://attack.mitre.org/techniques/T1071/004/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.command_and_control
+    - attack.t1071.004
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: route53.amazonaws.com
+        eventName: ChangeResourceRecordSets
+    condition: selection
+falsepositives:
+    - Automated DNS failover routines or global traffic manager updates.
+level: medium
