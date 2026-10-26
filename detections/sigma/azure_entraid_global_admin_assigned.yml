@@ -1,0 +1,24 @@
+title: Azure Entra ID Global Administrator Role Assigned
+id: 11223344-5566-7788-99aa-bbccddeeff00
+status: production
+description: Detects assignment of the highly privileged Global Administrator directory role to users or service principals in Microsoft Entra ID.
+references:
+    - https://attack.mitre.org/techniques/T1098/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.privilege_escalation
+    - attack.persistence
+    - attack.t1098
+logsource:
+    product: azure
+    service: auditlogs
+detection:
+    selection:
+        category: 'RoleManagement'
+        operationName: 'Add member to role'
+        targetResources.modifiedProperties.displayName: 'Global Administrator'
+    condition: selection
+falsepositives:
+    - Approved quarterly PIM (Privileged Identity Management) elevations.
+level: critical
