@@ -1,0 +1,24 @@
+title: Azure Network Security Group Ingress Rule 0.0.0.0/0 Created
+id: 33445566-7788-99aa-bbcc-ddeeff001122
+status: production
+description: Detects creation of Azure NSG security rules permitting inbound traffic from any source (*) to critical management ports (22, 3389).
+references:
+    - https://attack.mitre.org/techniques/T1190/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.initial_access
+    - attack.t1190
+logsource:
+    product: azure
+    service: activitylogs
+detection:
+    selection:
+        operationName: 'Microsoft.Network/networkSecurityGroups/securityRules/write'
+        properties.requestbody.properties.access: 'Allow'
+        properties.requestbody.properties.direction: 'Inbound'
+        properties.requestbody.properties.sourceAddressPrefix: '*'
+    condition: selection
+falsepositives:
+    - Intentional public load balancer endpoints configured with WAF inspection.
+level: critical
