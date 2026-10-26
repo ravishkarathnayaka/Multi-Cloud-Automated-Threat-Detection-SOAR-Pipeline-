@@ -1,0 +1,23 @@
+title: AWS EC2 EBS Snapshot Shared With External AWS Account
+id: 2a3b4c5d-6e7f-8a9b-0c1d-2e3f4a5b6c7d
+status: production
+description: Detects modification of EBS snapshot permissions to allow access to external or unapproved third-party accounts.
+references:
+    - https://attack.mitre.org/techniques/T1537/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.exfiltration
+    - attack.t1537
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: ec2.amazonaws.com
+        eventName: ModifySnapshotAttribute
+        requestParameters.attributeType: 'createVolumePermission'
+    condition: selection
+falsepositives:
+    - Verified cross-account backup replication in enterprise disaster recovery accounts.
+level: high
