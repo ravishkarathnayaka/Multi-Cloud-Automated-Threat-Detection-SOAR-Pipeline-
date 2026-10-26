@@ -1,0 +1,24 @@
+title: AWS Config Configuration Recording Stopped (Defense Impairment)
+id: d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a
+status: production
+description: Detects attempts to stop AWS Config recorder or delete configuration delivery channels to hide compliance drift.
+references:
+    - https://attack.mitre.org/techniques/T1562/001/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: config.amazonaws.com
+        eventName:
+            - StopConfigurationRecorder
+            - DeleteDeliveryChannel
+    condition: selection
+falsepositives:
+    - Maintenance windows migrating Config aggregators across multi-account organizations.
+level: high
