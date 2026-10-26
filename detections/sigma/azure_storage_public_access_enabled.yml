@@ -1,0 +1,22 @@
+title: Azure Storage Account Anonymous Public Blob Access Enabled
+id: 22334455-6677-8899-aabb-ccddeeff0011
+status: production
+description: Detects configuration changes on Azure Storage Accounts allowing anonymous public read access to blob storage containers.
+references:
+    - https://attack.mitre.org/techniques/T1530/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.exfiltration
+    - attack.t1530
+logsource:
+    product: azure
+    service: activitylogs
+detection:
+    selection:
+        operationName: 'Microsoft.Storage/storageAccounts/write'
+        properties.requestbody.properties.allowBlobPublicAccess: true
+    condition: selection
+falsepositives:
+    - Public CDN origin containers explicitly marked for open content delivery.
+level: high
