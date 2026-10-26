@@ -1,0 +1,24 @@
+title: AWS GuardDuty Finding CryptoCurrency Bitcoin Mining Workload
+id: 9a8b7c6d-5e4f-3a2b-1c0d-9e8f7a6b5c4d
+status: production
+description: Detects Amazon EC2 instances communicating with cryptocurrency mining pools or executing mining algorithms.
+references:
+    - https://attack.mitre.org/techniques/T1496/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.impact
+    - attack.t1496
+logsource:
+    product: aws
+    service: guardduty
+detection:
+    selection:
+        type:
+            - 'CryptoCurrency:EC2/BitcoinTool.B!DNS'
+            - 'CryptoCurrency:EC2/BitcoinTool.B'
+            - 'Execution:EC2/MaliciousFile'
+    condition: selection
+falsepositives:
+    - Legitimate approved blockchain testing sandboxes in isolated staging accounts.
+level: critical
