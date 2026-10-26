@@ -1,0 +1,30 @@
+title: AWS Lambda Serverless Function Created with Administrative Roles
+id: 5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b
+status: production
+description: Detects creation or modification of Lambda functions attached to high-privilege execution roles outside CI/CD channels.
+references:
+    - https://attack.mitre.org/techniques/T1587/001/
+    - https://attack.mitre.org/techniques/T1098/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.persistence
+    - attack.privilege_escalation
+    - attack.t1098
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: lambda.amazonaws.com
+        eventName:
+            - CreateFunction20150331
+            - UpdateFunctionCode20150331
+    filter_cicd:
+        userIdentity.sessionContext.sessionIssuer.userName:
+            - 'TerraformDeployer'
+            - 'GitHubActionsRunner'
+    condition: selection and not filter_cicd
+falsepositives:
+    - Developers testing lambdas in sandbox non-production AWS accounts.
+level: medium
