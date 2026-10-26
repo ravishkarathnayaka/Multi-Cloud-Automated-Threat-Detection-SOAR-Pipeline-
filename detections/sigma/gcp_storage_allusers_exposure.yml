@@ -1,0 +1,24 @@
+title: GCP Cloud Storage Bucket IAM Policy Granted to allUsers
+id: 55667788-99aa-bbcc-ddee-ff0011223344
+status: production
+description: Detects IAM policy mutations on Google Cloud Storage buckets adding allUsers or allAuthenticatedUsers to viewer/editor roles.
+references:
+    - https://attack.mitre.org/techniques/T1530/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.exfiltration
+    - attack.t1530
+logsource:
+    product: gcp
+    service: cloudaudit
+detection:
+    selection:
+        protoPayload.methodName: 'storage.setIamPermissions'
+        protoPayload.serviceData.policyDelta.bindingDeltas.member:
+            - 'allUsers'
+            - 'allAuthenticatedUsers'
+    condition: selection
+falsepositives:
+    - Public static asset distribution buckets configured with public read-only intent.
+level: high
