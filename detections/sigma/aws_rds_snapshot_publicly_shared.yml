@@ -1,0 +1,25 @@
+title: AWS RDS Database Snapshot Shared Publicly or with External Accounts
+id: b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e
+status: production
+description: Detects RDS DB snapshot attributes modified to 'all' or shared with unauthorized AWS account IDs.
+references:
+    - https://attack.mitre.org/techniques/T1530/
+    - https://attack.mitre.org/techniques/T1537/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.exfiltration
+    - attack.t1530
+    - attack.t1537
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: rds.amazonaws.com
+        eventName: ModifyDBSnapshotAttribute
+        requestParameters.valuesToAdd: 'all'
+    condition: selection
+falsepositives:
+    - Public open-data datasets purposefully released under organization approval.
+level: critical
