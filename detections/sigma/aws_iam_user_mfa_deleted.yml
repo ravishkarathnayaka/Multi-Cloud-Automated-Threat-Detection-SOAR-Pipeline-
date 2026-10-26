@@ -1,0 +1,24 @@
+title: AWS IAM User Multi-Factor Authentication (MFA) Device Deleted
+id: 8f9a0b1c-2d3e-4f5a-6b7c-8d9e0f1a2b3c
+status: production
+description: Detects deactivation or deletion of virtual or hardware MFA devices associated with IAM user identities.
+references:
+    - https://attack.mitre.org/techniques/T1556/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.persistence
+    - attack.t1556
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: iam.amazonaws.com
+        eventName:
+            - DeactivateMFADevice
+            - DeleteVirtualMFADevice
+    condition: selection
+falsepositives:
+    - Legitimate user hardware token replacement assisted by IT service desk.
+level: high
