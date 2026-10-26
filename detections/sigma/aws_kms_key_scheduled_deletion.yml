@@ -1,0 +1,24 @@
+title: AWS KMS Customer Managed Key Scheduled for Deletion
+id: 1f2e3d4c-5b6a-7980-ba98-fedcba098765
+status: production
+description: Detects attempts to schedule deletion of AWS Key Management Service (KMS) cryptographic keys, signaling data destruction attacks.
+references:
+    - https://attack.mitre.org/techniques/T1485/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.impact
+    - attack.t1485
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: kms.amazonaws.com
+        eventName:
+            - ScheduleKeyDeletion
+            - DisableKey
+    condition: selection
+falsepositives:
+    - Planned cryptographic key decommissioning approved via change control ticket.
+level: high
