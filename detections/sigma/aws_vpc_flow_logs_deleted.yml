@@ -1,0 +1,22 @@
+title: AWS VPC Flow Logs Deleted (Defense Evasion)
+id: 7c8d9e0f-1a2b-3c4d-5e6f-7a8b9c0d1e2f
+status: production
+description: Detects attempts to delete VPC Flow Logs configurations to blind network security monitoring and intrusion detection.
+references:
+    - https://attack.mitre.org/techniques/T1562/001/
+author: SOAR Pipeline Engineering Team
+date: 2026/10/26
+tags:
+    - attack.defense_evasion
+    - attack.t1562.001
+logsource:
+    product: aws
+    service: cloudtrail
+detection:
+    selection:
+        eventSource: ec2.amazonaws.com
+        eventName: DeleteFlowLogs
+    condition: selection
+falsepositives:
+    - Network redesign or log pipeline restructuring managed via verified CI/CD pipeline.
+level: high
